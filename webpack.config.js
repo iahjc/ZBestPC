@@ -5,6 +5,8 @@ const CopyWebpackPlugin = require('copy-webpack-plugin')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const UglifyJsPlugin = require("uglifyjs-webpack-plugin")
 const CssMinimizerPlugin = require("css-minimizer-webpack-plugin")
+const { CleanWebpackPlugin } = require('clean-webpack-plugin')
+
 
 module.exports = {
     mode: "development",
@@ -31,7 +33,22 @@ module.exports = {
                 sourceMap: true
             }),
             new CssMinimizerPlugin()
-        ]
+        ],
+        splitChunks: {
+            // 文件多大会分割文件 大于300kb
+            minSize: 300*1024,
+            chunks: 'all',
+            name: 'common',
+            // 对库单独进行打包
+            cacheGroups: {
+                jquery: {
+                    name: 'jquery',
+                    test: /jquery/,
+                    chunks: 'all'
+                }
+            }
+
+        }
     },
     module: {
         rules: [
@@ -49,6 +66,13 @@ module.exports = {
                 },
                 generator: {
                     filename: 'images/[name].[hash:6][ext]'
+                }
+            },
+            {
+                test: /\.ejs/,
+                loader: 'ejs-loader',
+                options: {
+                    esModule: false
                 }
             }
         ]
@@ -77,6 +101,7 @@ module.exports = {
         new MiniCssExtractPlugin({
             filename: 'css/[name].[hash].css',
             chunkFilename: 'css/[name].chunk.css'
-        })
+        }),
+        new CleanWebpackPlugin()
     ]
 }
